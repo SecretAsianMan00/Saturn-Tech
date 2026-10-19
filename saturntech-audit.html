@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Full Website Audit — saturntech.co.za (16 Oct 2026)</title>
+<meta name="description" content="Black-box audit of saturntech.co.za: performance, SEO, accessibility, security, content and conversion — the good, the bad and the ugly.">
+<style>
+:root{
+  --bg:#0d1117;--bg2:#11161d;--card:#151b24;--card2:#1a212c;--line:#232c3a;--txt:#dbe4f0;--muted:#8b98ac;
+  --accent:#4ea1ff;--ugly:#ff4d5e;--bad:#ffa726;--good:#31c48d;--info:#7a6cff;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+html[data-theme="light"]{
+  --bg:#f4f6fa;--bg2:#eaeef5;--card:#ffffff;--card2:#f7f9fc;--line:#dce2ec;--txt:#16202e;--muted:#5c6a7f;
+  --shadow:0 8px 24px rgba(20,35,60,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+code,.mono{font-family:var(--mono);font-size:.86em;background:rgba(122,108,255,.1);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+.mono.block{display:block;padding:10px 12px;margin:6px 0;white-space:pre-wrap;word-break:break-word;background:var(--bg2);color:var(--txt);line-height:1.5}
+h1,h2,h3{line-height:1.25;margin:0 0 .5em}
+h2{font-size:1.5rem;margin-top:2.2rem;padding-top:.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.1rem}
+p{margin:.5em 0}
+small,.small{font-size:.83rem;color:var(--muted)}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(140deg,var(--bg2),var(--bg) 60%),radial-gradient(900px 300px at 15% -10%,rgba(78,161,255,.18),transparent 60%);border-bottom:1px solid var(--line);padding:34px 0 26px;position:relative;overflow:hidden}
+.hero .grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center}
+.eyebrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tag{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--card)}
+.tag.url{color:var(--accent);border-color:rgba(78,161,255,.4);font-family:var(--mono);text-transform:none;letter-spacing:0}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);letter-spacing:-.02em}
+.sub{color:var(--muted);max-width:70ch}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:120px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:1.5rem;line-height:1.1}
+.kpi span{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ring{--p:0;--c:var(--accent);width:172px;height:172px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);position:relative;flex:none}
+.ring::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--card);border:1px solid var(--line)}
+.ring .val{position:relative;z-index:1;text-align:center}
+.ring .val b{display:block;font-size:2.6rem;line-height:1}
+.ring .val span{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .row{display:flex;gap:6px;align-items:center;overflow-x:auto;padding:9px 20px;max-width:1180px;margin:0 auto;scrollbar-width:thin}
+.nav a{color:var(--muted);text-decoration:none;font-size:.86rem;padding:6px 11px;border-radius:8px;white-space:nowrap}
+.nav a:hover{background:var(--card);color:var(--txt)}
+.nav .spacer{flex:1}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.84rem}
+.iconbtn:hover{border-color:var(--accent)}
+
+/* ---------- filters ---------- */
+.toolbar{position:sticky;top:47px;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 0}
+.toolbar .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 13px;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip b{font-weight:600;color:var(--txt)}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#04121f}
+.chip[aria-pressed="true"] b{color:#04121f}
+.chip.sev-ugly[aria-pressed="true"]{background:var(--ugly);border-color:var(--ugly);color:#1c0004}
+.chip.sev-bad[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#1f1000}
+.chip.sev-good[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:#002015}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+select,input[type=search]{background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 10px;font-size:.85rem;font-family:var(--sans)}
+input[type=search]{min-width:230px;flex:1;max-width:340px}
+input[type=search]:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- score bars ---------- */
+.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:16px}
+.score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.score .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.score .top b{font-size:.95rem}
+.score .num{font-family:var(--mono);font-size:1.05rem}
+.bar{height:8px;border-radius:99px;background:var(--line);margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--good));width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.score p{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+
+/* ---------- findings ---------- */
+.group-h{display:flex;align-items:center;gap:12px;margin:30px 0 12px}
+.group-h .pill{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;padding:5px 12px;border-radius:999px;font-weight:700}
+.pill.ugly{background:rgba(255,77,94,.15);color:var(--ugly);border:1px solid rgba(255,77,94,.4)}
+.pill.bad{background:rgba(255,167,38,.14);color:var(--bad);border:1px solid rgba(255,167,38,.4)}
+.pill.good{background:rgba(49,196,141,.14);color:var(--good);border:1px solid rgba(49,196,141,.4)}
+.group-h h2{border:0;margin:0;font-size:1.3rem;padding:0}
+.group-h .count{color:var(--muted);font-size:.85rem;font-family:var(--mono)}
+details.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:12px;margin:10px 0;overflow:hidden;transition:border-color .2s}
+details.card[open]{box-shadow:var(--shadow)}
+details.card.sev-ugly{border-left-color:var(--ugly)}
+details.card.sev-bad{border-left-color:var(--bad)}
+details.card.sev-good{border-left-color:var(--good)}
+details.card summary{cursor:pointer;list-style:none;padding:13px 16px;display:grid;grid-template-columns:auto auto 1fr auto auto;gap:11px;align-items:center}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary:hover{background:var(--card2)}
+details.card summary .id{font-family:var(--mono);font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+details.card summary .title{font-weight:600;font-size:.97rem}
+details.card summary .cat{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+details.card summary .effort{font-size:.72rem;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:2px 7px;white-space:nowrap}
+details.card summary .arrow{transition:transform .2s;color:var(--muted)}
+details.card[open] summary .arrow{transform:rotate(90deg)}
+.body{padding:2px 18px 18px;border-top:1px solid var(--line);background:var(--card2)}
+.body .cols{display:grid;grid-template-columns:1.15fr 1fr;gap:18px}
+@media(max-width:820px){.body .cols{grid-template-columns:1fr}details.card summary{grid-template-columns:auto 1fr auto;gap:8px}details.card summary .cat,details.card summary .effort{display:none}}
+.blk{margin-top:14px}
+.blk h4{margin:0 0 6px;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.blk ul{margin:0;padding-left:18px}
+.blk li{margin:5px 0}
+.fix{background:rgba(49,196,141,.07);border:1px solid rgba(49,196,141,.25);border-radius:10px;padding:12px 14px;margin-top:14px}
+.fix h4{color:var(--good)}
+.impact{background:rgba(78,161,255,.07);border:1px solid rgba(78,161,255,.22);border-radius:10px;padding:12px 14px}
+.impact h4{color:var(--accent)}
+.hidden{display:none!important}
+.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px;margin-top:20px}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);background:var(--card2);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--card2)}
+.ok{color:var(--good);font-weight:600}.warn{color:var(--bad);font-weight:600}.info{color:var(--accent);font-weight:600}
+code.st{font-family:var(--mono);font-size:.85em}
+.st-404{color:var(--ugly);font-weight:700}.st-200{color:var(--good);font-weight:700}.st-301{color:var(--bad);font-weight:700}.st-503{color:var(--bad);font-weight:700}
+
+/* ---------- roadmap ---------- */
+.rd{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:14px}
+.rd .col{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.rd h3{font-size:1rem;display:flex;justify-content:space-between;align-items:center}
+.rd .when{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.rd label{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.87rem;cursor:pointer}
+.rd label:last-child{border-bottom:0}
+.rd input{margin-top:4px;accent-color:var(--good);width:15px;height:15px;flex:none}
+.rd label.done span{text-decoration:line-through;color:var(--muted)}
+.rd .progress{font-family:var(--mono);font-size:.8rem;color:var(--good)}
+
+/* ---------- misc ---------- */
+.note{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--info);border-radius:10px;padding:12px 15px;margin:14px 0;font-size:.9rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}.hero .grid{grid-template-columns:1fr}.ring{margin:0 auto}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:10px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px}
+footer{border-top:1px solid var(--line);margin-top:50px;padding:26px 0 44px;color:var(--muted);font-size:.84rem}
+@media print{
+  .nav,.toolbar,.iconbtn{display:none!important}
+  body{background:#fff;color:#000}
+  details.card{break-inside:avoid;border:1px solid #ccc}
+  details.card .body{display:block!important}
+  h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap grid">
+    <div>
+      <div class="eyebrow">
+        <span class="tag url">https://www.saturntech.co.za</span>
+        <span class="tag">Black-box audit</span>
+        <span class="tag">16 Oct 2026</span>
+        <span class="tag">WordPress 7.1.3 · WooCommerce 11.2.1 · Electro 3.0.3</span>
+      </div>
+      <h1>Full site audit: the good, the bad and the ugly</h1>
+      <p class="sub">Every finding below is backed by something we actually measured on 16 Oct 2026 — an HTTP status, a byte count, a line of markup or a Lighthouse audit. Expand any card for the evidence, the impact and the exact fix.</p>
+      <div class="kpis">
+        <div class="kpi"><b id="k-total">0</b><span>findings</span></div>
+        <div class="kpi"><b id="k-ugly" style="color:var(--ugly)">0</b><span>ugly / critical</span></div>
+        <div class="kpi"><b id="k-bad" style="color:var(--bad)">0</b><span>bad / should fix</span></div>
+        <div class="kpi"><b id="k-good" style="color:var(--good)">0</b><span>good / keep</span></div>
+        <div class="kpi"><b id="k-p0">0</b><span>do this week</span></div>
+      </div>
+    </div>
+    <div class="ring" id="ring" aria-label="Overall score">
+      <div class="val"><b id="overall">0</b><span>overall / 100</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Report sections">
+  <div class="row">
+    <a href="#overview">Overview</a>
+    <a href="#findings">Findings</a>
+    <a href="#ua-matrix">Mobile 404 test</a>
+    <a href="#lighthouse">Lighthouse data</a>
+    <a href="#headers">Headers &amp; exposure</a>
+    <a href="#inventory">Inventory</a>
+    <a href="#roadmap">Roadmap</a>
+    <span class="spacer"></span>
+    <button class="iconbtn" id="expand" type="button">Expand all</button>
+    <button class="iconbtn" id="collapse" type="button">Collapse all</button>
+    <button class="iconbtn" id="theme" type="button" aria-label="Toggle theme">Theme</button>
+    <button class="iconbtn" id="print" type="button">Print</button>
+  </div>
+</nav>
+
+<div class="toolbar" id="findings">
+  <div class="wrap row">
+    <button class="chip sev-ugly" data-sev="ugly" aria-pressed="false"><span class="dot"></span>Ugly <b id="c-ugly">0</b></button>
+    <button class="chip sev-bad" data-sev="bad" aria-pressed="false"><span class="dot"></span>Bad <b id="c-bad">0</b></button>
+    <button class="chip sev-good" data-sev="good" aria-pressed="false"><span class="dot"></span>Good <b id="c-good">0</b></button>
+    <select id="catsel" aria-label="Filter by category"><option value="">All categories</option></select>
+    <input type="search" id="q" placeholder="Search findings (e.g. cache, H1, debug.log, alt)…" aria-label="Search findings">
+    <button class="iconbtn" id="reset" type="button">Reset</button>
+    <span class="small" id="showing" aria-live="polite"></span>
+  </div>
+</div>
+
+<main class="wrap">
+
+<section id="overview">
+  <h2>Executive overview</h2>
+  <div class="note"><strong>Bottom line:</strong> a capable, well-stocked catalogue (2&nbsp;708 products, 231 categories) running on a stock commercial theme that was never fully finished. Two things dominate: <strong>the homepage returns HTTP&nbsp;404 to every mobile and tablet browser</strong> (so most retail visitors land on a "Page not found" screen), and the site has <strong>no page cache, no CDN and no security hardening</strong> — TTFB of 3.2–12&nbsp;s, an 845&nbsp;KB public <code>debug.log</code>, open XML-RPC and user enumeration. Meanwhile the theme's own demo content (a demo email address, demo phone number and social links pointing at the theme author's ThemeForest portfolio) is still live in the production footer.</div>
+
+  <div class="scores" id="scores"></div>
+
+  <div class="legend">
+    <span><i style="background:var(--ugly)"></i>Ugly — broken, risky or revenue-killing</span>
+    <span><i style="background:var(--bad)"></i>Bad — should be fixed, measurable cost</span>
+    <span><i style="background:var(--good)"></i>Good — working well, keep doing it</span>
+  </div>
+
+  <div class="grid2" style="margin-top:22px">
+    <div class="blk">
+      <h4>What was tested</h4>
+      <ul class="small">
+        <li>Homepage + 15 key URLs (shop, category, product, contact, about, FAQ, cart, checkout, login, blog, legal) with HTTP probes from multiple user agents.</li>
+        <li>Full HTML source analysis of the 469&nbsp;KB homepage (headings, images, forms, links, markup duplication, demo leftovers, trackers).</li>
+        <li>Lighthouse 12.8.2 mobile runs (about page, shop page) + attempted homepage runs.</li>
+        <li>Response headers, TLS/ALPN, redirects, compression, cache policy, robots.txt, XML sitemaps, WP REST API, exposed endpoints.</li>
+        <li>Structured data, meta/canonical/OG tags, internal link graph sampling, content quality review.</li>
+      </ul>
+    </div>
+    <div class="blk">
+      <h4>Scope &amp; honesty notes</h4>
+      <ul class="small">
+        <li>Passive black-box only: no logins, no brute force, no exploitation, no load testing. Probes were rate-limited and read-only.</li>
+        <li>Numbers are single-sample spot checks (16 Oct 2026) — treat timings as indicative, not lab-grade.</li>
+        <li>Server-side causes (e.g. the mobile 404) were diagnosed from outside; the exact plugin responsible needs a staging reproduction.</li>
+        <li>Pages that intermittently returned <code>503</code> or dropped connections during the audit are flagged as such.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="findings-section">
+  <div class="group-h" id="gh-ugly"><span class="pill ugly">Ugly</span><h2>Critical — fix now</h2><span class="count" data-count="ugly"></span></div>
+  <div id="list-ugly"></div>
+  <div class="group-h" id="gh-bad"><span class="pill bad">Bad</span><h2>Important — fix next</h2><span class="count" data-count="bad"></span></div>
+  <div id="list-bad"></div>
+  <div class="group-h" id="gh-good"><span class="pill good">Good</span><h2>Working well — keep it</h2><span class="count" data-count="good"></span></div>
+  <div id="list-good"></div>
+  <div class="empty hidden" id="empty">No findings match this filter.</div>
+</section>
+
+<section id="ua-matrix">
+  <h2>Evidence: the mobile 404 user-agent matrix</h2>
+  <p>Same URL (<code>https://www.saturntech.co.za/</code>), same moment, only the <code>User-Agent</code> changes. The homepage is a real WordPress <code>error404</code> page for every mobile/tablet agent and a normal <code>200</code> for desktop agents.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>User agent tested</th><th>Status</th><th>Body class / note</th></tr></thead>
+      <tbody id="ua-body">
+        <tr><td>Windows Chrome 131</td><td class="st-200">200</td><td>Full homepage, <code>home</code> template</td></tr>
+        <tr><td>Windows Edge 131</td><td class="st-200">200</td><td>Full homepage</td></tr>
+        <tr><td>macOS Safari 17</td><td class="st-200">200</td><td>Full homepage</td></tr>
+        <tr><td>Linux Chrome / X11</td><td class="st-200">200</td><td>Full homepage</td></tr>
+        <tr><td>HeadlessChrome 155 (Windows)</td><td class="st-200">200</td><td>Full homepage</td></tr>
+        <tr><td>Googlebot desktop</td><td class="st-200">200</td><td>Crawlers unaffected — indexation is fine, users are not</td></tr>
+        <tr><td>Googlebot-Smartphone</td><td class="st-200">200</td><td>Google's mobile crawler is exempt — the bug is invisible in Search Console</td></tr>
+        <tr><td>bingbot / AhrefsBot / curl</td><td class="st-200">200</td><td>Crawlers unaffected</td></tr>
+        <tr><td><strong>iPhone Safari 17</strong></td><td class="st-404">404</td><td><code>class="error404 …"</code>, title "Page not found", 261&nbsp;KB</td></tr>
+        <tr><td><strong>iPad Safari 17</strong></td><td class="st-404">404</td><td>error404</td></tr>
+        <tr><td><strong>Android Chrome 14 (Pixel/SM-S918B)</strong></td><td class="st-404">404</td><td>error404</td></tr>
+        <tr><td><strong>Android Firefox 132</strong></td><td class="st-404">404</td><td>error404</td></tr>
+        <tr><td><strong>Lighthouse mobile (Chrome/136 Android)</strong></td><td class="st-404">404</td><td><code>ERRORED_DOCUMENT_REQUEST</code> — PageSpeed Insights cannot audit the homepage</td></tr>
+        <tr><td>Isolation test: desktop UA + " Mobile" token</td><td class="st-404">404</td><td>The word <code>Mobile</code>/<code>iPhone</code>/<code>Android</code>/<code>iPad</code> in the UA is sufficient to trigger it</td></tr>
+        <tr><td>Same iPhone UA on <code>/shop-2/</code>, <code>/about/</code>, <code>/faq/</code>, <code>/contact/</code>, <code>/robots.txt</code></td><td class="st-200">200</td><td><strong>Only the homepage</strong> is affected</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note"><strong>Why this matters commercially:</strong> the majority of SA e-commerce traffic is mobile. Every organic or direct mobile visit to <code>saturntech.co.za</code> currently lands on a 404 page that still shows your header, mega-menu and footer — so shoppers can *see* the shop but the landing page says "Page not found". Because Googlebot-Smartphone is exempt, Search Console and your rankings look perfectly healthy while real shoppers bounce.</div>
+</section>
+
+<section id="lighthouse">
+  <h2>Evidence: Lighthouse (mobile, throttled, simulated)</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Page</th><th>Perf</th><th>A11y</th><th>SEO</th><th>Best&nbsp;prac.</th><th>FCP</th><th>LCP</th><th>TBT</th><th>CLS</th><th>Speed&nbsp;Index</th><th>TTFB (root doc)</th></tr></thead>
+      <tbody>
+        <tr><td><code>/about/</code></td><td class="warn">46</td><td class="warn">88</td><td class="warn">85</td><td class="ok">96</td><td>4.0&nbsp;s</td><td>4.4&nbsp;s</td><td class="warn">970&nbsp;ms</td><td class="ok">0.009</td><td class="warn">21.2&nbsp;s</td><td class="st-503">12.2&nbsp;s</td></tr>
+        <tr><td><code>/shop-2/</code></td><td class="warn">41</td><td class="warn">80</td><td class="warn">77</td><td class="ok">93</td><td>4.2&nbsp;s</td><td>4.5&nbsp;s</td><td class="st-404">1&nbsp;330&nbsp;ms</td><td class="ok">0.002</td><td class="warn">15.4&nbsp;s</td><td class="st-503">7.6&nbsp;s</td></tr>
+        <tr><td><code>/</code> (homepage, mobile)</td><td colspan="10" class="warn">Cannot be measured — Lighthouse's mobile user agent receives HTTP 404 (<code>ERRORED_DOCUMENT_REQUEST</code>). Homepage desktop runs also failed; raw probes show TTFB 3.2–3.4&nbsp;s, 469&nbsp;KB HTML.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Lighthouse audit that failed</th><th>Measured</th></tr></thead>
+      <tbody>
+        <tr><td>Reduce initial server response time</td><td class="st-404">7.6 s – 12.2 s (no page cache)</td></tr>
+        <tr><td>Eliminate render-blocking resources</td><td class="st-404">2.5 – 2.9 s savings available</td></tr>
+        <tr><td>Reduce unused JavaScript</td><td class="st-404">236 – 254 KiB unused</td></tr>
+        <tr><td>Reduce unused CSS</td><td class="st-404">127 – 146 KiB unused</td></tr>
+        <tr><td>Minimize main-thread work</td><td class="st-404">4.1 – 6.1 s (style/layout 2.1 s, script eval 1.8 s)</td></tr>
+        <tr><td>Reduce JavaScript execution time</td><td class="st-404">1.6 – 1.9 s</td></tr>
+        <tr><td>Reduce the impact of third-party code</td><td class="st-404">~390 ms blocking (GTM 359 ms, poptin 99 ms, cdnjs jQuery 32 ms)</td></tr>
+        <tr><td>Serve static assets with an efficient cache policy</td><td class="warn">43 resources without browser caching</td></tr>
+        <tr><td>Avoid an excessive DOM size</td><td class="warn">3 290 elements, depth 20, <strong>227 children on one &lt;ul&gt;</strong> (mega-menu)</td></tr>
+        <tr><td>Document doesn't use legible font sizes</td><td class="st-404">Only 51.32% of text ≥ 12 px (product titles 11.998 px)</td></tr>
+        <tr><td>Browser errors were logged to the console</td><td class="st-404"><code>TypeError: Cookies.getJSON is not a function</code></td></tr>
+        <tr><td>Links do not have descriptive text</td><td class="st-404">18+ "Read more" links on shop</td></tr>
+        <tr><td>Button/link name, heading order, skip link, colour contrast, touch target size, label-content mismatch, redundant alt</td><td class="st-404">all score 0</td></tr>
+        <tr><td>Meta description / link text / robots.txt fetch</td><td class="st-404">score 0 (robots.txt fetched OK by curl but Lighthouse's fetch failed during runs)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="headers">
+  <h2>Evidence: HTTP headers &amp; exposed endpoints</h2>
+  <div class="grid2">
+    <div>
+      <h3 style="font-size:1rem">Response headers (homepage, 200)</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Header</th><th>Value / status</th></tr></thead>
+          <tbody>
+            <tr><td><code>Server</code></td><td class="warn"><code>Apache/2</code> — version-disclosing token (origin is actually LiteSpeed)</td></tr>
+            <tr><td><code>Strict-Transport-Security</code></td><td class="warn">absent (no HSTS, no preload)</td></tr>
+            <tr><td><code>Content-Security-Policy</code></td><td class="warn">absent</td></tr>
+            <tr><td><code>X-Frame-Options</code> / <code>frame-ancestors</code></td><td class="warn">absent → clickjacking</td></tr>
+            <tr><td><code>X-Content-Type-Options</code></td><td class="warn">absent</td></tr>
+            <tr><td><code>Referrer-Policy</code></td><td class="warn">absent</td></tr>
+            <tr><td><code>Permissions-Policy</code></td><td class="ok">present (state-token allowances only)</td></tr>
+            <tr><td><code>Cache-Control</code> (HTML)</td><td class="warn">absent on 200; <code>no-cache, no-store</code> on 404</td></tr>
+            <tr><td><code>Cache-Control</code> (images)</td><td class="warn"><code>private</code> + <code>X-LiteSpeed-Cache-Control: no-cache</code> → nothing is cached</td></tr>
+            <tr><td>Compression</td><td class="ok">gzip on HTML (469 127 B → 45 679 B); <span class="warn">no Brotli</span></td></tr>
+            <tr><td>Protocol</td><td class="ok">HTTP/2 via ALPN (<code>h2</code>) confirmed in Chrome; <code>Upgrade: h2,h2c</code></td></tr>
+            <tr><td>Images</td><td class="ok">auto-negotiated <code>image/webp</code> (logo 20 335 B → 11 260 B), <code>Vary: Accept</code></td></tr>
+            <tr><td>Redirect chain</td><td class="ok"><code>http://saturntech</code> →301→ <code>https://saturntech</code> →301→ <code>https://www.saturntech</code> →200 (single hops, clean)</td></tr>
+            <tr><td>TTFB (curl, anonymous)</td><td class="st-404">3.2 – 3.4 s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:1rem">Exposed / reachable endpoints</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Endpoint</th><th>Status</th><th>Risk</th></tr></thead>
+          <tbody>
+            <tr><td><code>/wp-content/debug.log</code></td><td class="st-404">200 — 845 774 B</td><td class="st-404">Public PHP error log; leaks server paths (<code>/home/saturnn/domains/saturntech.co.za/public_html/…</code>) and plugin stack traces</td></tr>
+            <tr><td><code>/wp-json/wp/v2/users</code></td><td class="st-404">200</td><td class="st-404">Full author enumeration (Faraaz Moosa, Ohzna, Shaheed + author archives)</td></tr>
+            <tr><td><code>/xmlrpc.php</code> (POST <code>system.listMethods</code>)</td><td class="st-404">200, <code>pingback.ping</code> enabled</td><td class="st-404">DDoS amplification + brute-force relay still open</td></tr>
+            <tr><td><code>/wp-login.php</code></td><td class="st-301">200</td><td class="warn">Exposes login path (no 2FA/rate-limit evidence)</td></tr>
+            <tr><td><code>/readme.html</code></td><td class="st-404">200</td><td class="warn">Fingerprinting aid (WordPress readme/requirements)</td></tr>
+            <tr><td><code>/wp-json/</code> (REST index)</td><td class="st-404">200</td><td class="warn">Discloses routes + <code>X-WP-Total</code>; CORS <code>Allow: GET</code> present</td></tr>
+            <tr><td><code>/wp-content/uploads/</code></td><td class="ok">403</td><td class="ok">Directory listing blocked — good</td></tr>
+            <tr><td>Generator meta tags</td><td class="warn">present</td><td class="warn">Discloses WP 7.1.3, WooCommerce 11.2.1, Yoast 28.7, WPBakery 9.0.1, Slider Revolution 6.4.11, Redux, Site Kit, Wholesale Prices…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inventory">
+  <h2>Evidence: site &amp; content inventory</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Asset</th><th>Measured value</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>XML sitemaps (Yoast index)</td><td>page, product, product2, product3, product_cat — <code>lastmod</code> refreshed today</td><td class="ok">good</td></tr>
+        <tr><td>Products in sitemap</td><td>1 001 + 1 000 + 707 = <strong>2 708</strong></td><td class="ok">good coverage</td></tr>
+        <tr><td>Category pages in sitemap</td><td>231</td><td class="ok">good coverage</td></tr>
+        <tr><td>Static pages in sitemap</td><td>19 (incl. privacy, refund/returns, shipping, terms, FAQ, store directory, build-your-own)</td><td class="ok">good</td></tr>
+        <tr><td>Blog posts (REST <code>X-WP-Total</code>)</td><td><strong>0</strong></td><td class="warn">empty blog — no long-tail content</td></tr>
+        <tr><td>Homepage HTML</td><td>469 127 B raw / 45 679 B gzip; ~3 400 lines</td><td class="warn">very large document</td></tr>
+        <tr><td>Category page HTML (<code>hdmi-cables</code>)</td><td>394 795 B raw, 48 product cards, H1 only</td><td class="warn">no category copy (no <code>term-description</code>)</td></tr>
+        <tr><td>Shop page HTML</td><td>382 816 B raw / 44 211 B transfer, 3 290 DOM nodes</td><td class="warn">heavy</td></tr>
+        <tr><td>Assets on homepage</td><td>15 stylesheets + 31 external scripts + 23 inline scripts (~96 KB) + 14 inline styles (~22 KB)</td><td class="warn">bloat</td></tr>
+        <tr><td>Links on homepage</td><td>648 anchors; 6 with <code>href="#"</code>; mega-menu markup repeated ~3×</td><td class="warn">duplication</td></tr>
+        <tr><td>Forms on homepage</td><td>3 × identical search forms; <strong>0 newsletter forms</strong></td><td class="st-404">conversion dead end</td></tr>
+        <tr><td>Images on homepage</td><td>69 total; 65 with alt, 3 slider dummies with no alt, 1 demo banner <code>alt=""</code>; only 4 <code>loading="lazy"</code></td><td class="warn">mostly fine, few lazy</td></tr>
+        <tr><td>Reviews / ratings</td><td>0 <code>aggregateRating</code> anywhere; 24 star-rating widgets render empty</td><td class="st-404">no social proof</td></tr>
+        <tr><td>Trackers</td><td>GA4 (<code>GT-PJRDSHXJ</code>), Google Site Kit, Poptin pixel — <strong>no cookie/consent banner</strong></td><td class="warn">POPIA/consent gap</td></tr>
+        <tr><td>Hosting / edge</td><td>DNS NS <code>ns1/ns2.da.host-ive.com</code>, origin <code>197.189.232.244</code>, no CDN/WAF in front; HTTP/2 on</td><td class="warn">no edge protection</td></tr>
+        <tr><td>Stability during audit</td><td>Intermittent <code>503</code> and dropped connections under light concurrent probes</td><td class="warn">fragile under load</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="roadmap">
+  <h2>Remediation roadmap</h2>
+  <p class="small">Tick items as you go — progress is saved in your browser (localStorage).</p>
+  <div class="rd" id="roadmap-cols"></div>
+</section>
+
+<section>
+  <h2>How to re-verify any claim</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Claim</th><th>Reproduce it with</th></tr></thead>
+      <tbody>
+        <tr><td>Mobile homepage 404</td><td><code>curl -A "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Version/17.0 Mobile/15E148 Safari/604.1" -I https://www.saturntech.co.za/</code></td></tr>
+        <tr><td>Public debug.log</td><td>Open <code>https://www.saturntech.co.za/wp-content/debug.log</code></td></tr>
+        <tr><td>User enumeration</td><td>Open <code>https://www.saturntech.co.za/wp-json/wp/v2/users</code></td></tr>
+        <tr><td>XML-RPC pingback</td><td><code>POST /xmlrpc.php</code> with <code>&lt;methodCall&gt;&lt;methodName&gt;system.listMethods&lt;/methodName&gt;&lt;/methodCall&gt;</code></td></tr>
+        <tr><td>No page cache / slow TTFB</td><td><code>curl -o /dev/null -w "TTFB=%{time_starttransfer}\n" https://www.saturntech.co.za/</code> (repeat 3×)</td></tr>
+        <tr><td>Missing security headers</td><td><code>curl -sI https://www.saturntech.co.za/</code> and look for HSTS/CSP/XFO/XCTO/Referrer-Policy</td></tr>
+        <tr><td>Demo leftovers</td><td>View source of the homepage footer: <code>info@electro.com</code>, <code>+060 (800) 801-858</code>, <code>demo.madrasthemes.com</code></td></tr>
+        <tr><td>Lighthouse scores</td><td>PageSpeed Insights → but note the homepage mobile run will fail/return a 404 document until the UA bug is fixed</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong>Audit of saturntech.co.za</strong> — performed 16 October 2026. Black-box, read-only, non-destructive. Findings are a point-in-time snapshot; re-run the checks after each remediation batch.
+  </div>
+</footer>
+
+<script>
+const SCORES=[
+ {k:"Reliability & critical bugs",v:2,n:"Homepage 404s for every mobile/tablet browser; intermittent 503s under light load."},
+ {k:"Security & privacy",v:2,n:"Public debug.log, open XML-RPC, user enumeration, no HSTS/CSP/CSP headers."},
+ {k:"Performance",v:3,n:"TTFB 3.2–12 s, no page cache, no CDN, LCP 4.5 s, TBT 1.3 s, Speed Index 15–21 s."},
+ {k:"SEO",v:6,n:"Solid Yoast + sitemaps + 2 708 products, but no H1 on homepage, no meta descriptions on inner pages, thin categories, empty blog."},
+ {k:"Accessibility",v:5,n:"Lighthouse 80–88: unnamed controls, contrast, 12 px-min fonts, heading order, touch targets."},
+ {k:"Content & trust",v:3,n:"Theme demo content live in footer, no reviews anywhere, typos in metadata, stale 2022 specials."},
+ {k:"Conversion & UX",v:4,n:"Newsletter form is an empty div, phone/WhatsApp links dead, mobile landing page says 'Page not found'."},
+ {k:"Code & maintainability",v:4,n:"469 KB HTML, 46 assets, tripled menu markup, duplicated product cards, JS console error on every page."}
+];
+
+const F=[
+{id:"U-01",sev:"ugly",cat:"Critical bugs",effort:"M",when:"P0",title:"Homepage returns HTTP 404 to every mobile and tablet user",
+ impact:"The majority of SA retail traffic lands on a 'Page not found' screen that still shows the full shop chrome. Bounce rate and mobile revenue collapse while desktop looks healthy — and because Googlebot-Smartphone is exempt, Search Console shows no problem.",
+ evidence:["iPhone Safari 17, iPad Safari 17, Android Chrome 14, Android Firefox 132 and Lighthouse's mobile UA all get <strong>404</strong> on <code>https://www.saturntech.co.za/</code>; Windows Chrome/Edge, macOS Safari, Linux Chrome, HeadlessChrome get <strong>200</strong> — repeated 5/5 times.","404 body is a genuine WordPress 404: <code>class=\"error404 …\"</code>, title 'Page not found', 261 KB, with the normal header/mega-menu/footer still rendered.","Isolation test: desktop UA plus the single token <code>Mobile</code> (or <code>iPhone</code>/<code>Android</code>/<code>iPad</code>) is enough to trigger it.","All other pages (<code>/shop-2/</code>, <code>/about/</code>, <code>/contact/</code>, <code>/faq/</code>, product and category pages, <code>robots.txt</code>) return 200 with the same mobile UA — only the front page is affected.","<code>/</code> and <code>/index.php</code> both 404 on mobile; <code>https://saturntech.co.za/</code> (non-www) too."],
+ fix:["Reproduce in staging with an iPhone UA, then bisect: disable plugins one at a time — anything branching on <code>wp_is_mobile()</code>, <code>is_mobile()</code> or UA sniffing (Revolution Slider, wholesale prices, fincon, user-registration, any 'mobile redirect'/AMP plugin).","Audit hooks that alter the main query: <code>request</code>, <code>template_include</code>, <code>pre_get_posts</code> in the theme's <code>functions.php</code> plus any custom <code>.htaccess</code>/<code>LiteSpeed</code> UA rewrite rules.","Check the homepage static page (ID 2139, template <code>template-homepage-v1</code>) — something is forcing <code>$wp_query-&gt;set_404()</code> for mobile agents on the front page only.","Add a regression check: a cron/uptime monitor that requests the homepage with an iPhone UA and alerts on any status other than 200."]},
+{id:"U-02",sev:"ugly",cat:"Security",effort:"S",when:"P0",title:"WordPress debug.log is publicly downloadable (845 KB of server internals)",
+ impact:"Anyone can read your PHP error log: server filesystem paths, plugin versions, stack traces and failure patterns — a ready-made reconnaissance pack for an attacker targeting the site.",
+ evidence:["<code>GET /wp-content/debug.log</code> → <strong>200 OK</strong>, 845 774 bytes.","Contains absolute paths such as <code>/home/saturnn/domains/saturntech.co.za/public_html/wp-includes/functions.php</code> repeated thousands of times.","Content is PHP notices from <code>eh-woocommerce-pricing-discount</code>, <code>fincon-woocommerce</code>, <code>woocommerce</code> — confirming installed plugin inventory."],
+ fix:["Set <code>WP_DEBUG</code>/<code>WP_DEBUG_LOG</code> to <strong>false</strong> in <code>wp-config.php</code> on production; keep logging only in staging, or write to a file outside the web root.","Delete the existing <code>wp-content/debug.log</code> and add a deny rule: <code>&lt;Files \"debug.log\"&gt; Require all denied &lt;/Files&gt;</code> (Apache/LiteSpeed vhost or <code>.htaccess</code>).","Add a WAF/CDN rule (or wordfence/iThemes) that blocks <code>/wp-content/*.log</code> and <code>/wp-config.php*</code> requests.","Rotate/scrub old logs — 845 KB shows logging has been on for a long time."]},
+{id:"U-03",sev:"ugly",cat:"Security",effort:"S",when:"P0",title:"Full user enumeration through the REST API",
+ impact:"Attackers get a free list of valid login names plus author-archive URLs, which halves the work of credential-stuffing and password-spraying against <code>wp-login.php</code>.",
+ evidence:["<code>GET /wp-json/wp/v2/users</code> → <strong>200</strong> returning real accounts: <code>Faraaz Moosa</code> (slug <code>faraaz</code>, id 2), <code>Ohzna</code> (id 250), <code>Shaheed</code> (id 1) with Gravatar hashes and author archive links.","Author archives are also reachable: <code>/author/faraaz/</code>, <code>/author/shaheed/</code>."],
+ fix:["Block anonymous access to the users endpoint — e.g. <code>rest_endpoints</code> filter to unset <code>/wp/v2/users</code> for non-logged-in users, or deny <code>/wp-json/wp/v2/users</code> at the web-server level.","Disable author archives (<code>/?author=1</code> redirects): 301 author URLs to the homepage or remove author bases with a small snippet.","Prevent username leakage in post bylines if authors are only staff (or use display names that aren't logins).","Pair with login rate limiting (fail2ban/LiteSpeed Rate Limiting) and 2FA for all admin accounts."]},
+{id:"U-04",sev:"ugly",cat:"Security",effort:"S",when:"P0",title:"xmlrpc.php fully enabled including pingback",
+ impact:"XML-RPC is the classic WordPress amplification and brute-force vector: one request can attempt hundreds of password guesses, and pingbacks can be weaponised to DDoS third parties from your server IP.",
+ evidence:["<code>POST /xmlrpc.php</code> with <code>system.listMethods</code> → <strong>200</strong>, 4 363-byte response listing methods including <code>pingback.ping</code>.","<code>HEAD /xmlrpc.php</code> → 405, i.e. the endpoint is alive and only rejects HEAD."],
+ fix:["Block it outright: <code>&lt;Files xmlrpc.php&gt; Require all denied &lt;/Files&gt;</code>, or <code>Redirect 410 /xmlrpc.php</code>, or the 'Disable XML-RPC' layer of a security plugin.","Confirm nothing still uses it (Jetpack/legacy importers/mobile apps) — nothing on this site does.","If a plugin requires it, disable only <code>pingback.*</code> and <code>system.multicall</code> via the <code>xmlrpc_enabled</code> filter instead of leaving it wide open."]},
+{id:"U-05",sev:"ugly",cat:"Security",effort:"S",when:"P0",title:"No HSTS, CSP, clickjacking, MIME-sniffing or referrer headers",
+ impact:"Browsers are told nothing about how the site may be embedded or loaded: downgrade/insecure-initiated requests are allowed (no HSTS), pages can be iframed by any third party (clickjacking), and there is no policy against injected scripts.",
+ evidence:["Response headers for the 200 homepage contain only: <code>Server: Apache/2</code>, <code>Permissions-Policy</code>, <code>Link</code>, <code>Vary</code>, <code>Upgrade</code>, <code>Keep-Alive</code>.","<strong>Absent:</strong> <code>Strict-Transport-Security</code>, <code>Content-Security-Policy</code>, <code>X-Frame-Options</code>/<code>frame-ancestors</code>, <code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, <code>Cross-Origin-Opener-Policy</code>.","<code>Server: Apache/2</code> advertises the (mis-reported) server stack to attackers; hstspreload.org reports <code>status: unknown</code> for the domain — it has never been submitted, consistent with no HSTS header ever being served."],
+ fix:["Add headers in LiteSpeed vhost/<code>.htaccess</code>: <code>Strict-Transport-Security: max-age=31536000; includeSubDomains</code> (after testing), <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, <code>X-Frame-Options: SAMEORIGIN</code>.","Roll out a CSP incrementally (report-only first). Watch out: the site loads GTM, Poptin, Google Fonts, cdnjs and a hotlinked demo image — all must be allow-listed or removed first.","Remove the server token (<code>ServerTokens Prod</code> / <code>ServerSignature Off</code> — note the header says Apache while the box runs LiteSpeed, so fix it where the real server config lives).","Once stable, submit the domain to hstspreload.org."]},
+{id:"U-06",sev:"ugly",cat:"Content & trust",effort:"S",when:"P0",title:"Theme demo content is live in the production footer",
+ impact:"The store advertises another company's contact details and links its social icons to the theme author's portfolio — a serious credibility hit for first-time shoppers and a broken WhatsApp channel.",
+ evidence:["Mobile footer 'Customer Care' links: <code>tel:060%20(800)%20801-858</code> → <strong>+060 (800) 801-858</strong> and <code>mailto:info@electro.com</code> — both are Electro demo data.","'About Us' widget link labelled <strong>SuperDeals</strong> (theme demo label) pointing at the homepage.","All social icons (Facebook, Pinterest, LinkedIn, Instagram, YouTube) point to <code>http://themeforest.net/user/madrasthemes/portfolio</code>.","Footer banner image is hotlinked from <code>https://demo.madrasthemes.com/…/footer-wdiget-banner.png</code> (third-party dependency, <code>alt=\"\"</code>, wrapped in <code>href=\"#\"</code>).","WhatsApp links are empty: <code>whatsapp://send?phone=</code> and <code>web.whatsapp.com/send?phone=</code>; one widget heading renders mojibake (double-encoded non-breaking space)."],
+ fix:["Rebuild the footer widgets in WP admin: real social URLs (or remove icons until they're real), WhatsApp deep links with <code>27738281778</code>, delete the demo phone/email/SuperDeals items.","Download the banner locally (or delete the widget) — never hotlink <code>demo.madrasthemes.com</code>; give it descriptive <code>alt</code> text or drop it.","Add a pre-launch checklist item: 'grep the homepage for <code>electro.com</code>, <code>madrasthemes</code>, <code>themeforest</code>, <code>SuperDeals</code>, <code>+060</code>'.","Fix the broken widget heading (re-save the widget in admin to clear the encoded character)."]},
+{id:"U-07",sev:"ugly",cat:"Conversion",effort:"S",when:"P0",title:"Newsletter block promises 5% off but has no form at all",
+ impact:"Your single strongest on-site lead-capture hook renders a headline and a discount promise over an empty div — every visitor who wants the 5% discount finds nothing to click, on desktop and mobile.",
+ evidence:["Footer markup: <code>&lt;h5&gt;Sign up to Newsletter&lt;/h5&gt; … receive &lt;strong&gt;5 % Discount on Your First Purchase&lt;/strong&gt;</code> followed by <code>&lt;div class=\"newsletter-form\"&gt;&lt;/div&gt;</code> — the div is completely empty.","Source-wide form census of the homepage: only 3 forms exist, all identical <code>aws-search-form</code> search forms; no newsletter, no email input anywhere on the page."],
+ fix:["Add a real opt-in (Mailchimp/FluentCRM/MailerLite, or WooCommerce coupon-on-signup) inside that block — one email field + submit, with double opt-in.","If the newsletter plugin was deactivated, either restore it or remove the headline so you stop advertising a feature that doesn't exist.","Validate POPIA: consent wording, unsubscribe link, and where the list is stored.","Set a success/error state and track submissions in GA4 as a <code>generate_lead</code> event."]},
+{id:"U-08",sev:"ugly",cat:"SEO",effort:"M",when:"P0",title:"Homepage has zero H1 and its hero copy exists only inside three PNG images",
+ impact:"The page most likely to rank for 'computer parts South Africa' has no top-level heading and no crawlable hero text — Google reads an empty hero, screen-reader users get nothing, and none of your repair/laptop messaging is indexable.",
+ evidence:["Full-source scan: <strong>0 <code>&lt;h1&gt;</code> elements</strong> on the homepage; 84 <code>&lt;h2&gt;</code> (several of them SKU codes like <code>&lt;h2&gt;HDE009&lt;/h2&gt;</code>) and 0 <code>&lt;h3&gt;</code>.","Hero is a Revolution Slider with 3 slides of 2048×768 PNGs ('Laptop Repair Help Banner (1)', 'Desktop PC Repair Support Banner (1)', 'On-Site Laptop Repair Now (1)') — all copy baked into pixels, slide titles only in <code>title</code> attributes.","H1 is also missing on <code>/contact/</code>, <code>/cart-2/</code> and the <code>/product-category/computers-components/</code> template."],
+ fix:["Add a real <code>&lt;h1&gt;</code> to the homepage — either the section title 'Computer Parts &amp; Laptop Accessories in South Africa' or the hero headline rendered as HTML text.","Rebuild the hero with text in HTML/CSS (background image + overlay text), or add an accessible <code>&lt;h2&gt;</code>+paragraph under the slider with the repair/laptop value proposition.","Set one <code>&lt;h1&gt;</code> per template in the theme templates for contact/cart/category, and demote SKU codes from headings to <code>&lt;span&gt;</code>.","Run a heading-outline check after the change: h1 → h2 → h3, no skips."]},
+{id:"U-09",sev:"ugly",cat:"Performance",effort:"M",when:"P0",title:"No page caching: TTFB 3.2 s from curl, up to 12.2 s in Lighthouse",
+ impact:"Every single page view waits multiple seconds before the first byte arrives, on top of a 469 KB document. This alone is worth more conversion than every other fix on this page combined.",
+ evidence:["<code>curl -w '%{time_starttransfer}'</code> on the homepage: <strong>3.42 s</strong> and <strong>3.20 s</strong> (two runs, anonymous, no plugin warm-up).","Lighthouse measured root-document response of <strong>12.2 s</strong> (<code>/about/</code>) and <strong>7.6 s</strong> (<code>/shop-2/</code>).","Static images carry <code>Cache-Control: private</code> and <code>X-LiteSpeed-Cache-Control: no-cache</code> — LiteSpeed Cache is installed but page/object caching is clearly off.","Lighthouse: 'Serve static assets with an efficient cache policy' → 43 resources; 'Reduce initial server response time' score 0."],
+ fix:["Enable LiteSpeed Cache page caching (public, mobile variant since the theme is responsive) + object cache (Redis/Memcached) if available on the host.","Add browser caching at the server: <code>Cache-Control: public, max-age=31536000, immutable</code> for hashed static assets, <code>max-age=86400</code> for uploads/CSS/JS.","Purge after deploy, and verify with 3 consecutive <code>curl</code> runs — target TTFB &lt; 500 ms on cache hit.","If the host cannot deliver that, move to a LiteSpeed/Cloudways-style plan or put Cloudflare in front (see U-10)."]},
+{id:"U-10",sev:"ugly",cat:"Security",effort:"M",when:"P0",title:"No CDN/WAF in front of the origin, and the server hiccups under trivial load",
+ impact:"Your real server IP and stack are directly exposed to the internet with no DDoS absorption or WAF — and during this audit the site already returned 503s and dropped connections under light concurrent probing, which is exactly what happens during a flash sale or a bot crawl.",
+ evidence:["DNS: <code>ns1.da.host-ive.com</code> / <code>ns2.da.host-ive.com</code>, <code>A www → 197.189.232.244</code> — direct origin, no Cloudflare/Fastly/Incapsula signature anywhere in headers.","<code>Server: Apache/2</code> on every response; no <code>cf-ray</code>, <code>x-cache</code> or similar edge headers.","Observed during the audit: intermittent <code>503</code> responses (e.g. <code>?page_id=2139</code>, <code>?wc-ajax=</code>) and 'connection closed unexpectedly' on several category URLs.","Combined with XML-RPC open (U-04) and a public error log (U-02), the origin is an easy target."],
+ fix:["Put Cloudflare (free tier suffices to start) or the host's CDN in front: proxy DNS, enable bot protection, rate-limit <code>/wp-login.php</code>, <code>/xmlrpc.php</code>, <code>/wp-json/</code>.","Enable HSTS only after the CDN is in place so you don't paint yourself into a corner.","Enable LiteSpeed/LSWS caching at the same time (they stack well) and re-test TTFB.","Add uptime monitoring from at least two regions (and with a mobile UA — see U-01).","Confirm with the host why 503s appeared; check PHP worker limits/opcache memory."]},
+{id:"U-11",sev:"ugly",cat:"Content & trust",effort:"M",when:"P1",title:"Zero product reviews across 2 708 products — while star ratings still render empty",
+ impact:"Shoppers see star-shaped widgets with no stars and no review count next to products priced up to R12 990+, which reads as 'nobody has ever bought this'. It also costs you rich results: no <code>aggregateRating</code> means no star snippets in Google.",
+ evidence:["Homepage scan: 24 <code>star-rating</code>/<code>product-rating</code> blocks render with no review data.","Product page JSON-LD: <code>Product</code> + <code>Offer</code> present, <code>aggregateRating</code> = <strong>0</strong>, <code>Review</code> = <strong>0</strong>.","Catalogue-wide effect: Lighthouse and schema checks found no ratings on any tested product."],
+ fix:["Turn on verified-purchase reviews (WooCommerce product reviews + reminder email 7–14 days after delivery) and seed them for your top 20 SKUs by emailing past buyers.","Hide the rating widget entirely until a product has ≥1 review — empty stars are worse than none.","Add <code>aggregateRating</code>/<code>Review</code> markup that mirrors the visible reviews (Google requires the on-page match).","Syndicate trust signals you already have: Google Business Profile reviews, Mustek distributor listing, years-in-business badges."]},
+{id:"U-12",sev:"ugly",cat:"Conversion",effort:"S",when:"P0",title:"The site's own contact CTAs are dead links",
+ impact:"A phone-first business whose phone number is an <code>href=\"#\"</code> is losing calls, and WhatsApp — the channel you advertise in the top bar — silently opens a chat with no recipient.",
+ evidence:["Top bar: one link containing the entire contact string 'Tel: 031 201 1270 – 031 201 6658 | Whatsapp: 073 828 1778 Free Technical Support 0878059780' with <code>href=\"#\"</code> — clicking does nothing.","WhatsApp links across the footer/mobile menu: <code>whatsapp://send?phone=</code> and <code>https://web.whatsapp.com/send?phone=</code> with <strong>empty</strong> phone parameters.","Lighthouse 'Links do not have a discernible name' / 'Buttons do not have an accessible name' both score 0."],
+ fix:["Split the top bar into separate links: <code>tel:0312011270</code>, <code>tel:0312016658</code>, <code>https://wa.me/27738281778</code>, <code>tel:0878059780</code> — each with a short visible label.","Fill every WhatsApp URL with <code>27738281778</code> and prefill text ('Hi Saturn Tech, I need help with …').","Make the phone number a <code>tel:</code> link with an icon + text; add <code>aria-label</code> to icon-only links.","Add a floating WhatsApp button on mobile — it's the highest-converting contact channel in SA retail."]},
+
+{id:"B-01",sev:"bad",cat:"SEO",effort:"S",when:"P1",title:"Meta descriptions are missing on every page except the homepage",
+ impact:"Google auto-generates snippets from random page text, so your best-controlled sales copy — shipping, price match, expertise — never appears in search results. Lighthouse scores the meta-description audit 0 on both pages tested.",
+ evidence:["<code>/contact/</code>, <code>/about/</code>, <code>/shop-2/</code>, <code>/cart-2/</code>, <code>/blog-2/</code>, <code>/faq/</code>, <code>/login-page/</code>, <code>/product-category/…</code>, <code>/product/…</code> → <strong>no <code>&lt;meta name=\"description\"&gt;</code></strong> at all.","Only the homepage ships one (131 characters, and it contains a typo — see B-02).","Lighthouse SEO category: <code>meta-description</code> score 0 on <code>/about/</code> and <code>/shop-2/</code>."],
+ fix:["In Yoast, set an <strong>SEO title + meta description template</strong> for default, product, category and page types (e.g. 'Buy {term} in South Africa — free delivery over R500 | Saturn Tech').","Write unique descriptions for the top 20 revenue categories and pages by hand.","Verify after saving: <code>curl -s https://www.saturntech.co.za/shop-2/ | grep 'name=\"description\"'</code>.","Add meta keywords? Not needed — ignore that field."]},
+{id:"B-02",sev:"bad",cat:"Content & trust",effort:"S",when:"P1",title:"Typos in indexable metadata, category names and product titles",
+ impact:"A misspelled brand name in your meta description is what Google shows under every homepage listing, and misspelled taxonomy dilutes exact-match relevance for the searches you want to win.",
+ evidence:["Meta description, <code>og:description</code> and Yoast JSON-LD all read 'Saturn <strong>Tecnologies</strong>' — on the homepage, i.e. in every SERP snippet.","Category slugs/names: <code>PS2 EXTENTION CABLES</code> (×6 in nav), <code>keyboard-and-mouse-set-wireles</code>.","Product titles: 'THERMAL PASTE SILVER <strong>MANHATTEN</strong>', 'MOUSE + KEYBOARD SMART FOR TV AND <strong>ANDROI</strong>', 'HARD DRIVE ENCLOSURE M 2 <strong>SDD</strong> SAT'.","Brand widget shows '<strong>Lenova</strong>'; address renders '135 <strong>stephen</strong> Dlamini Road'; copyright reads '© Saturn Technologies cc- All Rights Reserved'; payment image is <code>patment-icon-4.png</code>."],
+ fix:["Fix the brand typo first (homepage meta description + OG + Yoast schema) — it is the highest-visibility string on the site.","Bulk-correct category/product names: WooCommerce → Products/Categories; keep the old slugs with 301s if you change them.","Write a one-page style guide: sentence case for categories (or deliberate ALL CAPS — see B-27), correct spelling of brand names, 'Saturn Technologies CC'.","Add a pre-publish spellcheck (Yoast's readability, or a browser extension) to the merchandising workflow."]},
+{id:"B-03",sev:"bad",cat:"Code health",effort:"S",when:"P1",title:"JavaScript error on every page: Cookies.getJSON is not a function",
+ impact:"js-cookie v3 removed <code>getJSON</code>, so any script calling it dies — wishlist/compare/cart-cookie features silently fail, and the console error pollutes your analytics of 'site health'.",
+ evidence:["Lighthouse <code>errors-in-console</code> = 0 on both audited pages: <code>TypeError: Cookies.getJSON is not a function at HTMLDocument.&lt;anonymous&gt;</code>.","Triggered from theme/plugin code loading <code>…/js-cookie/js.cookie.min.js?ver=2.1.4-wc.11.2.1</code> alongside code expecting the older API.","Fires on <code>DOMContentLoaded</code>, i.e. on every page view."],
+ fix:["Grep the theme/child theme and plugins for <code>Cookies.getJSON</code> and replace with <code>JSON.parse(Cookies.get(name) || '{}')</code>, or pin js-cookie v2 for that code path.","Re-test wishlist ('YITH Wishlist') add/remove and compare buttons — they are the most likely casualties.","Re-run Lighthouse and confirm <code>errors-in-console</code> passes."]},
+{id:"B-04",sev:"bad",cat:"Performance",effort:"M",when:"P1",title:"469 KB homepage HTML plus 46 render-blocking asset requests",
+ impact:"The browser must download and parse a document bigger than most full web apps, then 15 stylesheets and 31 scripts — before anything interactive happens. This is the main reason FCP sits at 4 s and Speed Index at 15–21 s.",
+ evidence:["Homepage HTML: <strong>469 127 bytes</strong> raw (45 679 B gzip), ~3 400 lines, 648 anchors, menu markup repeated ~3× (desktop + sticky + mobile copies of the same mega-menu).","<strong>15 stylesheets</strong> (selectBox, prettyPhoto, YITH wishlist, fincon, Revolution Slider, Advanced Woo Search, Google Fonts Inter, font-electro, FontAwesome, animate.css, mCustomScrollbar, Electro style + colours, Redux custom fonts, Roboto) and <strong>31 external scripts</strong> + 23 inline script blocks (~96 KB inline JS, mostly Revolution Slider config).","Category page HTML 394 KB; shop page HTML 382 KB (44 KB transferred).","Legacy libraries still shipped: <code>prettyPhoto</code>, <code>mCustomScrollbar</code>, <code>animate.css</code>, Pace, jQuery + jQuery Migrate."],
+ fix:["Slim the header: load only the CSS/JS each template needs (Electro has per-page asset flags); dequeue <code>prettyPhoto</code>, <code>mCustomScrollbar</code>, <code>animate.css</code>, Pace if unused.","Replace the triple-rendered mega-menu with one markup copy driven by CSS (also fixes the 227-child <code>&lt;ul&gt;</code>).","Defer non-critical JS (Slider Revolution can be deferred/loaded after interaction), async GTM/Poptin.","Enable LiteSpeed's CSS/JS minify + HTTP/2 push off; target &lt; 20 requests above the fold.","Consider replacing Revolution Slider (huge inline config) with plain HTML hero slides — ties into U-08."]},
+{id:"B-05",sev:"bad",cat:"Performance",effort:"M",when:"P1",title:"2.5–2.9 s of render-blocking work, 254 KB of unused JS, 146 KB of unused CSS",
+ impact:"Visees wait for styles and scripts they never use on that page; Lighthouse quantifies the savings as more than the entire current FCP.",
+ evidence:["<code>render-blocking-resources</code> → est. savings <strong>2 510 ms</strong> (<code>/about/</code>) / <strong>2 513 ms</strong> (<code>/shop-2/</code>), all first-party + Google Fonts in <code>&lt;head&gt;</code>.","<code>unused-javascript</code> → <strong>254 KiB</strong> (<code>/about/</code>) / <strong>236 KiB</strong> (<code>/shop-2/</code>).","<code>unused-css-rules</code> → <strong>146 KiB</strong> / <strong>127 KiB</strong> (Electro's single 813 KB <code>style.min.css</code> is loaded whole).","<code>legacy-javascript</code> and <code>unminified-javascript/css</code> also flagged."],
+ fix:["Split theme CSS (or use the theme's child-theme overrides) so non-shop pages don't pull the full 813 KB stylesheet; keep <code>preload</code> for above-the-fold rules only.","Self-host and subset fonts (see B-20) with <code>font-display: swap</code>.","Move footer/slider scripts to <code>defer</code>; remove jQuery Migrate if plugins allow.","Re-measure: target render-blocking savings &lt; 500 ms."]},
+{id:"B-06",sev:"bad",cat:"Code health",effort:"M",when:"P1",title:"DOM bloat and triplicated navigation markup",
+ impact:"A 3 290-node document with a 227-child list forces expensive style/layout passes (Lighthouse measured 2.1 s of style &amp; layout) and makes every menu edit three times harder.",
+ evidence:["<code>/shop-2/</code>: <strong>3 290 DOM elements</strong>, max depth 20, <strong>227 child elements</strong> on a single <code>&lt;ul&gt;</code> (the all-departments mega-menu).","<code>/about/</code>: 1 351 elements — still 'excessive'.","Homepage: the full department menu is rendered ~3 times (primary, sticky/off-canvas, mobile), ~650 lines of duplicated menu HTML; 'PS2 EXTENTION CABLES' appears 6 times.","Main-thread work 4.1–6.1 s per page."],
+ fix:["Render the mega-menu once and reuse it for desktop/off-canvas/mobile with CSS (Electro supports consolidated menus).","Paginate or lazy-render huge category lists (48 cards on hdmi-cables is fine; 227 menu links are not).","Consider a 2-level mobile menu instead of the entire catalogue in the off-canvas drawer.","Re-run the <code>dom-size</code> audit — target &lt; 1 500 nodes on shop."]},
+{id:"B-07",sev:"bad",cat:"Code health",effort:"S",when:"P1",title:"Every product card renders its title and link twice",
+ impact:"Duplicate anchor text and duplicate internal links per product dilute crawl signals, inflate page weight and create ambiguous targets for screen readers.",
+ evidence:["44 <code>product-outer</code> cards on the homepage each emit the category tag + product title + link in <code>.product-loop-header</code> <em>and</em> <code>.product-loop-body</code>: 68 <code>woocommerce-LoopProduct-link</code> anchors for ~35 distinct products.","H2 product titles therefore appear twice per card."],
+ fix:["Edit the loop template (<code>content-product.php</code> / theme override) so the title/link is rendered once per card.","Keep the image link as the primary click target and the title as a single H2 link (or vice versa) — not both duplicated in two regions.","Grep for other duplicated loops (the footer 'Top Selling Products' widget also re-renders titles)."]},
+{id:"B-08",sev:"bad",cat:"SEO",effort:"M",when:"P1",title:"Broken heading hierarchy across templates",
+ impact:"With no H1 on the homepage/contact/cart/one category template and 84 undifferentiated H2s (some containing SKU codes), search engines and screen readers cannot identify the page's main topic.",
+ evidence:["Homepage: 0 H1, 84 H2, 0 H3, 19 H4.","SKU codes used as headings: <code>&lt;h2&gt;HDE009&lt;/h2&gt;</code>, <code>&lt;h2&gt;CH003&lt;/h2&gt;</code>, <code>&lt;h2&gt;IPA001&lt;/h2&gt;</code>.","Section titles that visually look like H1 are actually <code>&lt;h2 class=\"h1\"&gt;Best Sellers&lt;/h2&gt;</code> / 'Recently Added'.","Lighthouse <code>heading-order</code> = 0 on both audited pages.","Screen-reader-only H2s ('Products Grid', 'Brands Carousel') add noise."],
+ fix:["One H1 per template, H2 for page sections, H3 for sub-items — convert SKU headings to plain text.","Give carousel/section headings real semantic levels and remove empty screen-reader headings.","Add a lint step (e.g. an axe/HTML-validate check in CI) so regressions are caught."]},
+{id:"B-09",sev:"bad",cat:"Accessibility",effort:"M",when:"P1",title:"Unnamed buttons and links; skip links are not focusable",
+ impact:"Screen-reader users hear 'button, button, link' with no context; keyboard users cannot jump past the 650-line menu. This is also a POPIA/EPUBA-aligned accessibility expectation for a public retailer.",
+ evidence:["Lighthouse: <code>button-name</code> = 0 (e.g. hamburger toggles in the header), <code>link-name</code> = 0, <code>skip-link</code> = 0 ('Skip links are not focusable').","Footer social icons: 14 anchors with icon classes only — no text, no <code>aria-label</code>.","Search inputs have no <code>&lt;label&gt;</code> and no <code>aria-label</code> (only <code>placeholder=\"Search\"</code> with random ids like <code>id=\"6ad1d1c3d2402\"</code>).","Homepage has 6 <code>href=\"#\"</code> links (incl. the top-bar contact CTA)."],
+ fix:["Add <code>aria-label</code> to every icon-only control ('Open menu', 'Facebook', 'WhatsApp', 'Search products').","Fix skip links: ensure the target has <code>tabindex=\"-1\"</code> and the link becomes visible on focus.","Label search fields (<code>&lt;label class=\"sr-only\"&gt;</code> or <code>aria-label=\"Search products\"</code>).","Re-run Lighthouse accessibility — target ≥ 95."]},
+{id:"B-10",sev:"bad",cat:"Accessibility",effort:"M",when:"P1",title:"Low-contrast text and sub-12 px product titles",
+ impact:"Half the page text is too small to read on a phone without pinch-zoom, and grey-on-white links fail WCAG contrast — painful for a catalogue site where specs and prices matter.",
+ evidence:["Lighthouse <code>font-size</code>: only <strong>51.32%</strong> of text ≥ 12 px; <code>.woocommerce-loop-product__title</code> measures <strong>11.998 px</strong> and covers 34.89% of the page text; category labels 11.2 px.","<code>color-contrast</code> = 0 on <code>/shop-2/</code> (multiple anchors fail against the body background)."],
+ fix:["Raise product title/category typography to ≥ 14 px on mobile (16 px recommended) in the child theme; avoid px-only sizes — use <code>rem</code>.","Run a contrast audit on the yellow Electro colour scheme and adjust the muted grey used for links/meta text to ≥ 4.5:1.","Re-run Lighthouse: target font-size audit pass (&gt; 60% legible) and contrast ≥ 4.5:1."]},
+{id:"B-11",sev:"bad",cat:"Accessibility",effort:"S",when:"P1",title:"Touch targets too small or overlapping on mobile",
+ impact:"Mobile shoppers mis-tap category filters and 'Add to cart' buttons — a direct conversion tax on the exact device class that already gets a 404 on the homepage (U-01).",
+ evidence:["Lighthouse <code>target-size</code> = 0 on <code>/shop-2/</code>: repeated violations across product list items and header controls.","Related: top-bar links are tiny and packed (one contains the whole phone/WhatsApp string)."],
+ fix:["Ensure interactive elements are ≥ 44×44 CSS px with ≥ 8 px spacing (Electro's compact top bar and product loops need padding bumps).","Test on a real device after the change (or Chrome DevTools device mode + Lighthouse)."]},
+{id:"B-12",sev:"bad",cat:"Accessibility",effort:"S",when:"P1",title:"Alt-text quality: placeholders, redundancy and missing attributes",
+ impact:"Screen readers and Google Images get noise instead of product information; 14 products literally announce 'Placeholder'.",
+ evidence:["3 slider images have <strong>no <code>alt</code></strong> attribute (Revolution <code>dummy.png</code>); the demo footer banner has <code>alt=\"\"</code>.","14 product images use <code>alt=\"Placeholder\"</code> (e.g. VGA013).","Product alts are verbatim copies of the (ALL CAPS) title — Lighthouse flags <code>image-redundant-alt</code> = 0.","Only 4 images on the homepage carry <code>loading=\"lazy\"</code>; 27 have <code>decoding=\"async\"</code>."],
+ fix:["Upload real photos for the 14 placeholder SKUs (or mark them 'image coming soon' visually and remove them from feeds).","Write descriptive alts: 'Hikvision 16 GB metal USB flash drive, front' rather than repeating the title.","Remove <code>alt</code> from decorative slider dummies (keep <code>alt=\"\"</code>) but give meaningful alts to content images.","Set <code>loading=\"lazy\"</code> + <code>fetchpriority=\"high\"</code> only for the LCP image."]},
+{id:"B-13",sev:"bad",cat:"Security",effort:"S",when:"P1",title:"target=\"_blank\" without rel=\"noopener\" and six dead # links",
+ impact:"Tab-nabbing exposure on outbound links and a page full of anchors that go nowhere — bad for security hygiene and for crawl/user trust.",
+ evidence:["14 <code>target=\"_blank\"</code> links with zero <code>rel=\"noopener\"</code> (mostly to themeforest/WhatsApp).","6 <code>href=\"#\"</code> links including the top-bar contact block, the departments toggle and a styled block link."],
+ fix:["Add <code>rel=\"noopener noreferrer\"</code> to every <code>target=\"_blank\"</code>.","Replace <code>#</code> anchors with real URLs or <code>&lt;button&gt;</code>s (dropdowns should be buttons with <code>aria-expanded</code>).","Same pass as U-12 fixes the contact one."]},
+{id:"B-14",sev:"bad",cat:"SEO",effort:"S",when:"P1",title:'18+ "Read more" links give Google meaningless anchor text',
+ impact:"Anchor text is still a strong relevance signal; a wall of identical 'Read more' links wastes it and confuses users about where they go.",
+ evidence:["Lighthouse <code>link-text</code> = 0 on <code>/shop-2/</code>: 18 links with text 'Read more' pointing at distinct product URLs (LCD screens, SSDs, etc.)."],
+ fix:["Replace with the product name as the anchor, or add <code>aria-label</code>/<code>title</code> carrying the product name.","Fix at template level so every future product loop is correct."]},
+{id:"B-15",sev:"bad",cat:"SEO",effort:"M",when:"P1",title:"Category pages have no descriptive copy (thin content)",
+ impact:"231 category pages compete for terms like 'HDMI cables South Africa' with nothing but a grid of SKUs — no text for Google to rank and no guidance for shoppers.",
+ evidence:["<code>/product-category/hdmi-cables/</code>: 394 KB of markup, H1 'HDMI CABLES', <strong>no <code>term-description</code></strong> block in the template.","Category pages also ship no meta description (B-01).","Menu names are ALL CAPS, which also looks shouty in snippets."],
+ fix:["Add 100–250 words of genuinely useful copy at the top of your top 30 categories (what to check when buying, compat, delivery, warranty) — visible, not hidden behind a 'description' tab.","Optionally add an FAQ block per category with <code>FAQPage</code> schema.","Keep the copy above the product grid for crawl priority; link to related categories."]},
+{id:"B-16",sev:"bad",cat:"Content & trust",effort:"M",when:"P2",title:"Blog is empty and 'Specials' points at 2022 files",
+ impact:"No content engine means you only rank for exact product/category queries, and shoppers who click Specials land on stale Black Friday material from four years ago.",
+ evidence:["WordPress REST API: <code>X-WP-Total: 0</code> blog posts (blog page exists, title 'Blog - Saturn Technologies CC', H1 only).","Specials menu links to <code>/wp-content/uploads/2022/11/black-friday-specials.pdf</code>, <code>/2022/10/512-ssd-special.jpg</code> and a ViewSonic PDF (all still 200)."],
+ fix:["Publish 1–2 posts/month targeting real queries: 'laptop battery replacement Durban', 'SSD vs HDD upgrade', 'how to tell if your laptop screen is dying'.","Remove or date-gate expired specials; replace with an evergreen 'Clearance' category.","Cross-link blog ↔ category pages to distribute authority."]},
+{id:"B-17",sev:"bad",cat:"Content & trust",effort:"S",when:"P1",title:"Mis-filed, placeholder and fake-looking products in the catalogue",
+ impact:"Products in 'Uncategorized', stock images and empty ratings make the catalogue feel unfinished — and 'Uncategorized' is a classic low-quality signal.",
+ evidence:["2 products linked under <strong>Uncategorized</strong> on the homepage.","14 products render <code>woocommerce-placeholder.png</code> with <code>alt=\"Placeholder\"</code>.","24 products show empty star ratings (see U-11)."],
+ fix:["Reassign uncategorised products; bulk-edit in WooCommerce → Products.","Remove or complete listings that have no image/stock — a 2 708-SKU catalogue gains nothing from dead items.","Set up a weekly catalogue QA report (no image, no category, no stock, price = 0)."]},
+{id:"B-18",sev:"bad",cat:"SEO",effort:"S",when:"P1",title:"Social/meta and local-schema gaps",
+ impact:"Shared links can render without an image on some platforms, and Google gets no structured NAP (name/address/phone) to connect the site to your Durban shop.",
+ evidence:["<code>og:locale=en_US</code> while <code>&lt;html lang=\"en-ZA\"&gt;</code> — inconsistent.","<code>twitter:card=summary_large_image</code> is set but <code>twitter:image</code> is absent (product page has <code>og:image</code>, homepage does not declare one).","Schema graph contains <code>Organization</code>, <code>WebSite</code>, <code>WebPage</code>, <code>BreadcrumbList</code> — but <strong>no <code>LocalBusiness</code>/<code>Store</code> with address, geo, openingHours, telephone</strong>; product pages have <code>Product</code>+<code>Offer</code> but no ratings (U-11)."],
+ fix:["Add <code>LocalBusiness</code> schema (name, <code>135 Stephen Dlamini Road, Musgrave, Durban 4001</code>, <code>+27 31 201 1270</code>, <code>openingHours</code>, <code>priceRange</code>, geo) via Yoast/SEO plugin or a snippet plugin.","Set <code>og:image</code> + <code>twitter:image</code> sitewide (1200×630 with logo), and change <code>og:locale</code> to <code>en_ZA</code>.","Claim/complete the Google Business Profile and match NAP exactly across the site, Mustek listing and directories.","Validate in Google Rich Results Test + Schema.org validator after deploying."]},
+{id:"B-19",sev:"bad",cat:"Performance",effort:"S",when:"P1",title:"Static assets are not cacheable by the browser, and Brotli is off",
+ impact:"Repeat visitors re-download the same CSS/JS/images every session because the server literally sends <code>private, no-cache</code>; and gzip alone leaves ~15% on the table versus Brotli.",
+ evidence:["<code>Cache-Control: private</code> + <code>X-LiteSpeed-Cache-Control: no-cache</code> on <code>saturn-logo.png</code>; homepage HTML has no <code>Cache-Control</code>.","Lighthouse <code>uses-long-cache-ttl</code>: 43 resources; <code>cache-insight</code> est. savings 716–755 KiB.","<code>Accept-Encoding: br</code> request → response not compressed (469 127 B), gzip → 45 679 B; no <code>content-encoding: br</code>."],
+ fix:["Serve uploads/CSS/JS with <code>Cache-Control: public, max-age=…</code> (long for versioned assets, ≥ 1 day for uploads).","Enable Brotli in LiteSpeed (<code>mod_brotli</code>) — it is free performance on top of gzip.","Keep <code>ETag</code>/<code>Last-Modified</code> (already present) for conditional revalidation."]},
+{id:"B-20",sev:"bad",cat:"Performance",effort:"S",when:"P1",title:"Two font families plus a custom font CSS, no font-display strategy",
+ impact:"Fonts block or delay text paint; Lighthouse measured 160 ms of avoidable font-related delay and flagged <code>font-display</code> at 0.5.",
+ evidence:["Google Fonts <code>Inter</code> (300/400/600/700) <strong>and</strong> a separate <code>Roboto:400</code> request, plus <code>redux/custom-fonts/fonts.css</code> (30 KB-ish) loaded from uploads.","<code>font-display-insight</code> savings 160 ms; <code>font-display</code> score 0.5."],
+ fix:["Standardise on one family (Inter is already the theme's) and drop Roboto if unused.","Self-host &amp; subset WOFF2 with <code>font-display: swap</code> (or use <code>&lt;link&gt; rel=preload</code> for the primary weight only).","Drop weights you don't render (300/700 if unused)."]},
+{id:"B-21",sev:"bad",cat:"Legal & privacy",effort:"M",when:"P1",title:"GA4 and Poptin fire before any consent — no cookie banner",
+ impact:"POPIA (and Google's own consent-mode requirements) expect disclosure/consent before non-essential tracking; Poptin also drops a third-party script on every visitor.",
+ evidence:["Homepage loads <code>googletagmanager.com/gtag/js?id=GT-PJRDSHXJ</code> (async, configures immediately) and <code>cdn.popt.in/pixel.js?id=63d0a0914376c</code> in <code>&lt;head&gt;</code>.","No consent banner/cookie policy trigger found anywhere in the page source.","Privacy policy page exists and was updated 15 Oct 2026 (good), but there is no consent mechanism tying to it."],
+ fix:["Add a consent banner (CMP or lightweight first-party solution) that gates GA4/Poptin until accepted, and use Google Consent Mode v2 signals.","Link the cookie notice to your privacy policy; list exactly what is set.","Consider whether Poptin is earning its 99 ms main-thread cost — test disabling it."]},
+{id:"B-22",sev:"bad",cat:"Conversion",effort:"S",when:"P1",title:"No VAT/price transparency and payment methods shown as one sprite image",
+ impact:"SA retail expects VAT-inclusive pricing and visible payment options at a glance; a single unnamed image file (with a typo in its filename) communicates neither — and is invisible to screen readers.",
+ evidence:["Full-page scan: <strong>no 'VAT' text anywhere</strong> on the homepage; 52 price nodes render as <code>R50.00</code> (symbol glued to digits, no space).","Only payment graphic: <code>wp-content/uploads/2021/05/patment-icon-4.png</code> with <code>alt=\"\"</code> (filename typo 'patment').","No payment-gateway names appear in the markup."],
+ fix:["State pricing policy plainly ('All prices include 15% VAT' or 'excl. VAT' where wholesale applies) in the footer/product pages — required clarity under the CPA for consumer offers.","Format prices consistently (space after symbol: 'R 50.00' or 'R50.00' — pick one, apply store-wide).","Replace the sprite with labelled payment badges (EFT, card, PayFast/Ozow/whatever you support) with real <code>alt</code> text and a 'Secure checkout' note."]},
+{id:"B-23",sev:"bad",cat:"Technical SEO",effort:"S",when:"P1",title:"Inconsistent redirects and legacy '-2' slugs",
+ impact:"The same URL can 200 or 301 depending on the device, and every canonical URL carries an ugly remnant slug ('shop-2', 'cart-2', 'checkout-2', 'blog-2') that leaks into SERPs and shared links.",
+ evidence:["<code>/shop/</code> with a desktop UA → <strong>200</strong> with <code>&lt;link rel=canonical href=\"…/shop-2/\"&gt;</code>; with an iPhone UA → <strong>301</strong> to <code>/shop-2/</code>.","Page sitemap lists <code>shop-2</code>, <code>my-account-2</code>, <code>cart-2</code>, <code>checkout-2</code>, <code>blog-2</code>.","<code>/home/</code> → 301 → <code>/home-v1-2/</code>; <code>/index.php</code> → 404."],
+ fix:["Decide final slugs (drop the <code>-2</code>) and 301 the old ones once — including <code>/home/</code> leftovers.","Make redirect behaviour device-independent (the same rule for all UAs).","Keep canonicals self-referencing after the cleanup; update internal links in menus."]},
+{id:"B-24",sev:"bad",cat:"Accessibility",effort:"S",when:"P1",title:"Form and landmark labelling gaps",
+ impact:"Assistive tech cannot identify the search box or the footer link groups, and one widget heading is corrupted — small issues that stack up in an accessibility audit.",
+ evidence:["Search inputs: no <code>&lt;label&gt;</code>, no <code>aria-label</code>, randomised ids; 3 duplicate search forms per page.","One footer <code>&lt;h4&gt;</code> widget title contains a double-encoded non-breaking space (renders blank/mojibake).","Social icon links lack text/aria-label (see B-09)."],
+ fix:["Label all inputs, give landmark roles to header/nav/main/footer regions, and de-duplicate search forms to one.","Re-save the corrupted widget; add a validation pass for empty widget titles."]},
+{id:"B-25",sev:"bad",cat:"Security",effort:"S",when:"P1",title:"Version and plugin fingerprinting is wide open",
+ impact:"Attackers don't need to probe: the page source hands them your exact CMS, plugin and theme versions to look up in exploit databases.",
+ evidence:["Generator meta tags: <code>WordPress 7.1.3</code>, <code>WooCommerce 11.2.1</code>, <code>Redux 4.5.16</code>, <code>Site Kit 1.189.0</code>, <code>WooCommerce Wholesale Prices 2.3.0</code>, WPBakery 9.0.1, Slider Revolution 6.4.11 (plus Yoast/asset <code>ver=</code> strings).","<code>/readme.html</code> → 200; <code>/wp-login.php</code> → 200; asset paths reveal theme name/version (<code>themes/electro/…?ver=3.0.3</code>)."],
+ fix:["Strip generator meta tags and <code>EditURI</code>/RSD/pingback links; disable <code>readme.html</code>.","Keep everything auto-updated (LiteSpeed/Cron or a managed updater) so version exposure matters less.","Consider a login-URL change + rate limiting + 2FA as the real defence."]},
+{id:"B-26",sev:"bad",cat:"Performance",effort:"S",when:"P1",title:"Third-party scripts block the main thread",
+ impact:"GTM and the Poptin popup script together steal ~400 ms of main-thread time on a phone where TBT is already 1.3 s.",
+ evidence:["Lighthouse <code>third-party-summary</code>: Google Tag Manager 485 ms main-thread / <strong>359 ms blocking</strong>, Poptin 206 ms / 99 ms blocking, cdnjs jQuery 114 ms / 32 ms blocking.","Note also: jQuery loads twice in effect (local <code>wp-includes</code> copy + a cdnjs copy used by the theme)."],
+ fix:["Load GTM with <code>defer</code>/consent mode (ties into B-21), defer Poptin until after interaction or idle.","De-duplicate jQuery — serve one copy.","Audit which of the 31 scripts each template actually needs (B-04)."]},
+{id:"B-27",sev:"bad",cat:"Content & trust",effort:"M",when:"P2",title:"ALL-CAPS taxonomy and inconsistent brand presentation",
+ impact:"'BATTERIES FOR LAPTOPS', 'TELEPHONE CABLE', 'PS2 EXTENTION CABLES' in menus and snippets looks amateurish, hurts readability (and screen-reader prosody), and makes spelling errors louder.",
+ evidence:["Every category menu label and most product titles are upper-case across nav, cards, breadcrumbs and titles (e.g. 'PHONE CHARGING CABLE IPHONE1M BWO(PCC001 …' — note the unclosed parenthesis in the product <code>&lt;title&gt;</code>).","Address casing varies ('135 stephen Dlamini Road' vs '135 Stephen Dlamini Road'); copyright '© Saturn Technologies cc- All Rights Reserved'; top bar packs phone/WhatsApp/support into one dead link."],
+ fix:["Choose sentence/title case for categories and products, apply in bulk (be careful with slugs — keep them unchanged to avoid 301s).","Normalise NAP, copyright and product-title punctuation in one editorial pass.","Fix product titles with unbalanced brackets — they appear verbatim in SERP <code>&lt;title&gt;</code>s."]},
+
+{id:"G-01",sev:"good",cat:"Technical",effort:"—",when:"—",title:"HTTPS with a clean, single-hop redirect chain",
+ evidence:["<code>http://saturntech.co.za</code> →301→ <code>https://saturntech.co.za</code> →301→ <code>https://www.saturntech.co.za</code> →200. No redirect chains, no mixed hops.","Every tested asset URL is HTTPS."],
+ fix:["Keep it: after enabling HSTS (U-05) re-verify the chain once, then leave it alone."]},
+{id:"G-02",sev:"good",cat:"Technical",effort:"—",when:"—",title:"HTTP/2 is enabled and used by real browsers",
+ evidence:["ALPN negotiation returns <code>h2</code>; Lighthouse network log shows <code>protocol=h2</code> for document and assets; response sends <code>Upgrade: h2,h2c</code>."],
+ fix:["Keep — and once behind a CDN, confirm h2 (or h3) is still negotiated at the edge."]},
+{id:"G-03",sev:"good",cat:"Performance",effort:"—",when:"—",title:"Text compression works well",
+ evidence:["Homepage: 469 127 B raw → <strong>45 679 B</strong> with gzip (~90% saved).","CSS/JS assets also gzip (Electro style 813 KB → transferred compressed)."],
+ fix:["Add Brotli on top (B-19) for a further 10–15%."]},
+{id:"G-04",sev:"good",cat:"Performance",effort:"—",when:"—",title:"Automatic WebP image negotiation",
+ evidence:["Requesting the logo with <code>Accept: image/avif,image/webp,…</code> returns <code>Content-Type: image/webp</code> at 11 260 B vs 20 335 B PNG (~45% smaller), with correct <code>Vary: Accept</code>.","Product photos converted similarly (18 KB WebP)."],
+ fix:["Consider AVIF next, and make sure any CDN in front honours <code>Vary: Accept</code>."]},
+{id:"G-05",sev:"good",cat:"SEO",effort:"—",when:"—",title:"Yoast is properly configured: canonicals, live sitemaps, robots, breadcrumbs",
+ evidence:["<code>robots.txt</code> allows crawling, blocks WooCommerce logs/admin, and advertises the sitemap.","Sitemap index with 5 child sitemaps, <code>lastmod</code> refreshed 15–16 Oct 2026; 19 pages, 2 708 products, 231 categories.","Self-referencing canonicals on every page tested.","BreadcrumbList JSON-LD present.","<code>meta robots: index, follow, max-image-preview:large, max-snippet:-1</code>."],
+ fix:["After the slug cleanup (B-23), force one sitemap regeneration and submit in Search Console."]},
+{id:"G-06",sev:"good",cat:"SEO",effort:"—",when:"—",title:"Product + Offer structured data on product pages",
+ evidence:["Product page JSON-LD contains <code>Product</code>, <code>Offer</code> and <code>BreadcrumbList</code>; price/stock visible in markup (20 SKU mentions, 'Out of stock' state rendered)."],
+ fix:["Extend with <code>aggregateRating</code> once reviews exist (U-11) and consider <code>MerchantListing</code>/highly-relevant product feed for Google Shopping."]},
+{id:"G-07",sev:"good",cat:"Content",effort:"—",when:"—",title:"Large, well-organised catalogue and taxonomy",
+ evidence:["2 708 products across 231 categories, deep nested department menu (Cables → 28 subcategories), 19 static service pages (track order, FAQ, store directory, build-your-own, warranty/returns, shipping).","Internal linking: category links repeated 4–17× on the homepage."],
+ fix:["Preserve URL structure when renaming categories; use the internal-link strength to push money categories (B-15)."]},
+{id:"G-08",sev:"good",cat:"SEO",effort:"—",when:"—",title:"Strong homepage title tag",
+ evidence:["<code>&lt;title&gt;</code>: 'Computer Parts &amp; Laptop Accessories South Africa | Saturn Tech' — 54 chars, keyword + geography + brand, reads well in SERPs."],
+ fix:["Keep it; just fix the meta description typo beneath it (B-02) and re-check after adding an H1 (U-08)."]},
+{id:"G-09",sev:"good",cat:"SEO",effort:"—",when:"—",title:"Open Graph tags with an image on key pages",
+ evidence:["Homepage emits <code>og:title</code>, <code>og:description</code>, <code>og:url</code>, <code>og:site_name</code>, <code>og:type</code>; product pages emit <code>og:image</code>; <code>twitter:card=summary_large_image</code> set."],
+ fix:["Add <code>og:image</code>/<code>twitter:image</code> sitewide and fix <code>og:locale</code> (B-18)."]},
+{id:"G-10",sev:"good",cat:"SEO",effort:"—",when:"—",title:"Correct language declaration",
+ evidence:["<code>&lt;html lang=\"en-ZA\"&gt;</code> plus Yoast <code>inLanguage: en-ZA</code> — right locale for South African queries."],
+ fix:["Align <code>og:locale</code> to <code>en_ZA</code> for consistency (B-18)."]},
+{id:"G-11",sev:"good",cat:"Performance",effort:"—",when:"—",title:"Layout is stable — near-zero CLS",
+ evidence:["Lighthouse CLS <strong>0.009</strong> (about) and <strong>0.002</strong> (shop) — well under the 0.1 threshold.","68 of 69 homepage images carry explicit <code>width</code>/<code>height</code> attributes."],
+ fix:["Keep setting image dimensions; when you add the newsletter form (U-07), reserve its height to preserve CLS."]},
+{id:"G-12",sev:"good",cat:"Legal",effort:"—",when:"—",title:"Legal and service pages exist and are freshly maintained",
+ evidence:["Sitemap shows <code>privacy-policy</code> and <code>refund_returns</code> last modified 15 Oct 2026, <code>shipping-details</code> 05 Aug 2026, <code>about</code> 15 Oct 2026, plus terms, FAQ, contact.","Contact page publishes real trading hours, address and multiple numbers."],
+ fix:["Link them prominently in the footer/checkout and add cookie/POPIA consent wording (B-21)."]},
+{id:"G-13",sev:"good",cat:"Conversion",effort:"—",when:"—",title:"Real customer self-service features are live",
+ evidence:["Track Your Order, Login/Register, Wishlist, Product Compare, Build Your Own, Wholesale Prices, Store Locator, FAQ, returns/exchange and product-support pages all resolve 200.","Advanced Woo Search live-search forms render in header/sticky/mobile variants."],
+ fix:["These are genuine differentiators — surface them in the top bar and on product pages instead of demo content (U-06)."]},
+{id:"G-14",sev:"good",cat:"Analytics",effort:"—",when:"—",title:"Analytics and search-console plumbing is in place",
+ evidence:["GA4 via <code>GT-PJRDSHXJ</code> with <code>linker</code> configured; Google Site Kit (1.189.0) installed with content/WooCommerce/WPForms event providers; <code>google-site-verification</code> meta present.","Chrome speculation-rules prefetching enabled for faster internal navigation."],
+ fix:["Add the conversion events that matter (add-to-cart, checkout, newsletter sign-up) and consent mode (B-21)."]},
+{id:"G-15",sev:"good",cat:"Technical",effort:"—",when:"—",title:"Search engines are served full content",
+ evidence:["Googlebot, bingbot, AhrefsBot, facebookexternalhit and curl all receive <strong>200</strong> with the complete document; no cloaking/JS-gated content detected.","No <code>noindex</code> directives found; robots allow-all."],
+ fix:["Keep the UA-independence rule for every future feature — the mobile 404 (U-01) is exactly what happens when behaviour depends on the UA."]},
+{id:"G-16",sev:"good",cat:"Accessibility",effort:"—",when:"—",title:"Accessibility skeleton exists",
+ evidence:["Skip links to navigation and content are present; <code>aria-haspopup</code> and <code>role=\"menu\"</code> on dropdowns; 65 of 69 homepage images have alt text; 44 <code>aria-label</code> attributes in the document; <code>screen-reader-text</code> utilities in CSS.","Colour scheme (yellow Electro) passes in most areas — contrast failures are limited to specific list/meta text."],
+ fix:["Build on it: the failures listed in B-09/B-10/B-11/B-24 are all mechanical fixes, not redesigns."]},
+{id:"G-17",sev:"good",cat:"Technical",effort:"—",when:"—",title:"No mixed content on HTTPS pages",
+ evidence:["Homepage source has no <code>http://</code> asset references (the 55 'http://' strings are XML namespaces, gmpg.org profile, theme-author links and WhatsApp — no scripts/images/fonts)."],
+ fix:["Keep it that way when adding new embeds; the themeforest <code>http://</code> links should go anyway (U-06)."]},
+{id:"G-18",sev:"good",cat:"Technical",effort:"—",when:"—",title:"Icons, verification and profiling basics are complete",
+ evidence:["32/192/180/270 px favicons + apple-touch-icon + msapplication tile; Google site verification meta; RSS feed and oEmbed endpoints advertised."],
+ fix:["Nothing to do — just re-check after any theme change."]},
+{id:"G-19",sev:"good",cat:"Conversion",effort:"—",when:"—",title:"Mobile-first scaffolding is in place",
+ evidence:["<code>viewport</code> meta, off-canvas hamburger navigation with dedicated open/close buttons, sticky header (<code>stick-this</code>), responsive Bootstrap grid, responsive image <code>sizes</code> attributes.","Desktop/tablet rendering works across all tested templates."],
+ fix:["Once the mobile 404 (U-01) is fixed, do a real-device pass over the off-canvas menu, search and checkout."]},
+{id:"G-20",sev:"good",cat:"Technical",effort:"—",when:"—",title:"Static files support conditional requests",
+ evidence:["Images return <code>ETag</code>, <code>Last-Modified</code> and <code>Accept-Ranges: bytes</code> — revalidation and partial fetches work even though cache lifetime headers are missing."],
+ fix:["Pair with real <code>Cache-Control</code> (B-19) to get the full benefit."]}
+];
+
+const ROADMAP=[
+ {t:"This week — stop the bleeding",when:"P0 · days 1–7",items:[
+  {t:"Fix the mobile homepage 404 (U-01) — staging repro + plugin bisect + monitoring with an iPhone UA."},
+  {t:"Delete and disable wp-content/debug.log; deny *.log (U-02)."},
+  {t:"Block /wp-json/wp/v2/users for anonymous users (U-03)."},
+  {t:"Disable xmlrpc.php (U-04)."},
+  {t:"Strip Electro demo content from the footer; fix WhatsApp/social links (U-06, U-12)."},
+  {t:"Put a real form (or remove the promise) under 'Sign up to Newsletter' (U-07)."},
+  {t:"Add HSTS/CSP-prep headers, nosniff, Referrer-Policy, frame-ancestors (U-05)."},
+  {t:"Enable LiteSpeed page cache + browser caching; re-measure TTFB (U-09, B-19)."},
+  {t:"Fix the Cookies.getJSON JS error (B-03)."}]},
+ {t:"Weeks 2–4 — be findable and usable",when:"P1 · sprint 1",items:[
+  {t:"Add H1s (homepage hero as real text) + fix heading order (U-08, B-08)."},
+  {t:"Write meta description templates + fix 'Tecnologies' and other typos (B-01, B-02)."},
+  {t:"Add LocalBusiness schema, og:image/twitter:image, og:locale=en_ZA (B-18)."},
+  {t:"Category copy for the top 30 categories (B-15)."},
+  {t:"Accessibility sweep: labels, aria-labels, contrast, ≥14 px type, touch targets (B-09, B-10, B-11, B-24)."},
+  {t:"Asset diet: dequeue unused CSS/JS, defer GTM/Poptin, one jQuery, drop legacy libs (B-04, B-05, B-26)."},
+  {t:"Cookie consent + Consent Mode v2 before GA4/Poptin (B-21)."},
+  {t:"Reviews engine + hide empty star widgets (U-11)."},
+  {t:"VAT/pricing line + labelled payment badges (B-22)."}]},
+ {t:"Weeks 5–12 — compound the gains",when:"P2 · programme",items:[
+  {t:"Cloudflare/CDN + WAF in front of the origin; rate-limit login/xmlrpc/rest (U-10)."},
+  {t:"Content plan: 2 posts/month on repair/upgrade queries; retire stale specials (B-16)."},
+  {t:"Refactor menu (single copy) + de-duplicate product cards + slim DOM (B-06, B-07)."},
+  {t:"Slug cleanup: drop -2 URLs with 301s; device-independent redirects (B-23)."},
+  {t:"Brotli, font self-hosting/subsetting, AVIF experiments (B-19, B-20)."},
+  {t:"Product feed for Google Shopping + MerchantListing schema (G-06)."},
+  {t:"Lighthouse CI budgets (perf ≥ 70, a11y ≥ 95, SEO ≥ 95) + uptime checks incl. mobile UA."},
+  {t:"Full re-audit in 90 days and compare scores."}]}
+];
+
+/* ---------- render ---------- */
+const sevLabel={ugly:"Ugly",bad:"Bad",good:"Good"};
+const order={ugly:0,bad:1,good:2};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+function card(f){
+  const ev=f.evidence.map(e=>`<li>${e}</li>`).join("");
+  const fx=(f.fix||[]).map(x=>`<li>${x}</li>`).join("");
+  const impact=f.impact?`<div class="impact"><h4>Why it matters</h4><p>${f.impact}</p></div>`:"";
+  const fixBlock=fx?`<div class="fix"><h4>How to fix</h4><ul>${fx}</ul></div>`:"";
+  const meta=[f.cat,f.effort&&f.effort!=="—"?`effort ${f.effort}`:null,f.when&&f.when!=="—"?f.when:null].filter(Boolean).join(" · ");
+  return `<details class="card sev-${f.sev}" data-sev="${f.sev}" data-cat="${esc(f.cat)}" data-text="${esc((f.title+" "+f.cat+" "+(f.impact||"")+" "+f.evidence.join(" ")+" "+(f.fix||[]).join(" ")).toLowerCase())}">
+    <summary><span class="id">${f.id}</span><span class="pill ${f.sev}">${sevLabel[f.sev]}</span><span class="title">${f.title}</span><span class="cat">${meta}</span><span class="effort">${f.effort||""}</span><span class="arrow">▸</span></summary>
+    <div class="body"><div class="cols"><div>${impact}<div class="blk"><h4>Evidence</h4><ul>${ev}</ul></div></div><div>${fixBlock}</div></div></div>
+  </details>`;
+}
+
+const sorted=[...F].sort((a,b)=>order[a.sev]-order[b.sev]||a.id.localeCompare(b.id));
+const bySev={ugly:[],bad:[],good:[]};
+sorted.forEach(f=>bySev[f.sev].push(f));
+bySev.ugly.forEach(f=>document.getElementById("list-ugly").insertAdjacentHTML("beforeend",card(f)));
+bySev.bad.forEach(f=>document.getElementById("list-bad").insertAdjacentHTML("beforeend",card(f)));
+bySev.good.forEach(f=>document.getElementById("list-good").insertAdjacentHTML("beforeend",card(f)));
+
+document.getElementById("k-total").textContent=F.length;
+document.getElementById("k-ugly").textContent=bySev.ugly.length;
+document.getElementById("k-bad").textContent=bySev.bad.length;
+document.getElementById("k-good").textContent=bySev.good.length;
+document.getElementById("k-p0").textContent=F.filter(f=>f.when==="P0").length;
+["ugly","bad","good"].forEach(s=>{
+  document.getElementById("c-"+s).textContent=bySev[s].length;
+  document.querySelector(`[data-count="${s}"]`).textContent=bySev[s].length+" findings";
+});
+
+const cats=[...new Set(F.map(f=>f.cat))].sort();
+const sel=document.getElementById("catsel");
+cats.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);});
+
+const scoresEl=document.getElementById("scores");
+const overall=Math.round(SCORES.reduce((s,x)=>s+x.v,0)/SCORES.length*10);
+SCORES.forEach((s,i)=>{
+  scoresEl.insertAdjacentHTML("beforeend",
+   `<div class="score"><div class="top"><b>${s.k}</b><span class="num" style="color:${s.v<4?"var(--ugly)":s.v<7?"var(--bad)":"var(--good)"}">${s.v}/10</span></div>
+    <div class="bar"><i data-w="${s.v*10}"></i></div><p>${s.n}</p></div>`);
+});
+document.getElementById("overall").textContent=overall;
+document.getElementById("ring").style.setProperty("--p",overall);
+document.getElementById("ring").style.setProperty("--c",overall<50?"var(--ugly)":overall<75?"var(--bad)":"var(--good)");
+requestAnimationFrame(()=>setTimeout(()=>document.querySelectorAll(".bar i").forEach(b=>b.style.width=b.dataset.w+"%"),150));
+
+let sevFilter=new Set(),catFilter="",qFilter="";
+function apply(){
+  let shown=0;
+  document.querySelectorAll("details.card").forEach(d=>{
+    const okSev=!sevFilter.size||sevFilter.has(d.dataset.sev);
+    const okCat=!catFilter||d.dataset.cat===catFilter;
+    const okQ=!qFilter||d.dataset.text.includes(qFilter);
+    const ok=okSev&&okCat&&okQ;
+    d.classList.toggle("hidden",!ok);
+    if(ok)shown++;
+  });
+  ["ugly","bad","good"].forEach(s=>{
+    const n=[...document.querySelectorAll(`details.card.sev-${s}`)].filter(d=>!d.classList.contains("hidden")).length;
+    document.getElementById("gh-"+s).classList.toggle("hidden",n===0);
+  });
+  document.getElementById("empty").classList.toggle("hidden",shown>0);
+  document.getElementById("showing").textContent=`showing ${shown} of ${F.length}`;
+}
+document.querySelectorAll(".chip[data-sev]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const s=btn.dataset.sev;
+    if(sevFilter.has(s)){sevFilter.delete(s);btn.setAttribute("aria-pressed","false");}
+    else{sevFilter.add(s);btn.setAttribute("aria-pressed","true");}
+    apply();
+  });
+});
+sel.addEventListener("change",()=>{catFilter=sel.value;apply();});
+document.getElementById("q").addEventListener("input",e=>{qFilter=e.target.value.trim().toLowerCase();apply();});
+document.getElementById("reset").addEventListener("click",()=>{
+  sevFilter.clear();catFilter="";qFilter="";
+  document.querySelectorAll(".chip[data-sev]").forEach(b=>b.setAttribute("aria-pressed","false"));
+  sel.value="";document.getElementById("q").value="";apply();
+});
+document.getElementById("expand").addEventListener("click",()=>document.querySelectorAll("details.card:not(.hidden)").forEach(d=>d.open=true));
+document.getElementById("collapse").addEventListener("click",()=>document.querySelectorAll("details.card").forEach(d=>d.open=false));
+document.getElementById("print").addEventListener("click",()=>{document.querySelectorAll("details.card").forEach(d=>d.open=true);setTimeout(()=>window.print(),120);});
+
+const th=document.getElementById("theme");
+th.addEventListener("click",()=>{
+  const cur=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=cur;
+  try{localStorage.setItem("sat-theme",cur)}catch(e){}
+});
+try{const st=localStorage.getItem("sat-theme");if(st)document.documentElement.dataset.theme=st;}catch(e){}
+
+const rm=document.getElementById("roadmap-cols");
+ROADMAP.forEach((col,ci)=>{
+  const items=col.items.map((it,i)=>{
+    const key="sat-rm-"+ci+"-"+i;
+    let done=false;try{done=localStorage.getItem(key)==="1"}catch(e){}
+    return `<label class="${done?"done":""}" data-key="${key}"><input type="checkbox" ${done?"checked":""}><span>${it.t}</span></label>`;
+  }).join("");
+  rm.insertAdjacentHTML("beforeend",
+   `<div class="col"><h3>${col.t}<span class="progress" data-col="${ci}"></span></h3><div class="when">${col.when}</div>${items}</div>`);
+});
+function progress(ci){
+  const col=rm.querySelectorAll(`[data-key^="sat-rm-${ci}-"]`);
+  const done=[...col].filter(l=>l.classList.contains("done")).length;
+  const el=rm.querySelector(`[data-col="${ci}"]`);
+  if(el)el.textContent=done+"/"+col.length;
+}
+ROADMAP.forEach((c,ci)=>progress(ci));
+rm.addEventListener("change",e=>{
+  if(e.target.type!=="checkbox")return;
+  const lab=e.target.closest("label");if(!lab)return;
+  lab.classList.toggle("done",e.target.checked);
+  try{localStorage.setItem(lab.dataset.key,e.target.checked?"1":"0")}catch(err){}
+  progress(Number(lab.dataset.key.split("-")[2]));
+});
+apply();
+</script>
+</body>
+</html>
